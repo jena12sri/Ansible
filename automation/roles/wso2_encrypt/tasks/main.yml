@@ -1,0 +1,73 @@
+
+- name: Copy cipher-tool
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/repository/conf/security/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: cipher-tool.properties.j2, dest: cipher-tool.properties }
+    - { src: cipher-text.properties.j2, dest: cipher-text.properties }
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Copy cipher-tool
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/conf/security/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: cipher-tool.properties.j2, dest: cipher-tool.properties }
+    - { src: cipher-text.properties.j2, dest: cipher-text.properties }
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_FLAG == "integrator" 
+    - PRODUCT_NAME != "msg-broker"
+
+- name: Copy cipher-tool
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME}}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/wso2/broker/conf/security/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: cipher-tool.properties.j2, dest: cipher-tool.properties }
+    - { src: cipher-text.properties.j2, dest: cipher-text.properties }
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_FLAG == "integrator" 
+    - PRODUCT_NAME == "msg-broker"
+#
+- name: Setting permissions to executable file ciphertool.sh
+  file: path="{{ PRODUCT_HOME }}/wso2/broker/bin/ciphertool.sh" mode=0775
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+#
+- name: Encrypting passwords
+  expect:
+      command: "bin/ciphertool.sh -Dconfigure"
+      chdir: "{{ PRODUCT_HOME }}"
+      responses:
+         Password: "{{ KEY_PASS }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME != "msg-broker"
+
+- name: Encrypting passwords
+  expect:
+      command: "bin/ciphertool.sh -Dconfigure"
+      chdir: "{{ PRODUCT_HOME}}/wso2/broker"
+      responses:
+         Password: "{{ KEY_PASS }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+################### API-MGR ##################
+
+#- name: Encrypt variableis to API-MGR
+#  include_role:
+#    name: wso2-encrypted-key_add
+#  vars:
+#    TARGET_PASS: "{{ KEY_PASS }}"
+#    TARGET_ALIAS: key_pass
+#  when: PRODUCT_FLAG == 'api-mgr' or PRODUCT_NAME == 'api-mgr'
+
+##############################################

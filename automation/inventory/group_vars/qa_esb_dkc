@@ -1,0 +1,27 @@
+---
+PRODUCT_NAME: esb
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+DSS_URL: "https://dss.qa2.adtalem.com/services/INTG_DVG_ConfigService"
+LOAD_BALANCER_URL: "https://esbdkc.qa2.adtalem.com"
+CLUSTER: "true"
+CLUSTER_PORT: "5701"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAIKYGBMEOCZL2BCRQ"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "ATGE QA-WS02AP-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "esb_dkc_qa"
+
+CLUSTER_NAME: "dkc"
+
+SERIAL: "1"
+
+INSTITUTIONS: "DKC,DVU"
+
+ENV: "QA"
+
+JVM_OPTS: "-server -d64 -Xms8G -Xmx8G -XX:MaxMetaSpaceSize=1g -XX:+AggressiveOpts -XX:+UseParallelOldGC -XX:ReservedCodeCacheSize=512m -XX:+AlwaysPreTouch -XX:+PrintReferenceGC -XX:+ParallelRefProcEnabled -XX:MaxTenuringThreshold=15 -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:SurvivorRatio=6 -XX:NewRatio=1 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -Xloggc:$CARBON_HOME/repository/logs/gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
+JDK_XMS: "8g"
+JDK_XMX: "8g"

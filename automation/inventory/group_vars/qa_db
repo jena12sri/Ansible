@@ -1,0 +1,3 @@
+DB_ADDRESS: "intgwso2qa.caqet6i0i5un.us-east-2.rds.amazonaws.com" 
+ALLOWED_CLIENTS: "%.%.%.%"
+USER: "appusr"

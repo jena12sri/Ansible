@@ -1,0 +1,39 @@
+---
+# tasks file for wso2_startup_script
+#
+- name: Cleaning KEY_PASS from .bash_profile and .bashrc
+  lineinfile: path="{{ item }}" line='export KEY_PASS=' state=absent
+  with_items:
+        - "~/.bash_profile"
+        - "~/.bashrc"
+  become_user: "{{ remote_user }}"
+
+- name: Addind KEY_PASS into .bash_profile and .bashrc
+  lineinfile: path="{{ item }}" line='export KEY_PASS=\"{{ KEY_PASS  }}\"'
+  with_items:
+        - "~/.bash_profile"
+        - "~/.bashrc"
+  become_user: "{{ remote_user }}"
+
+- name: Creating wso2.sh file for service and setting access level
+  template:
+          src: "{{ role_path }}/templates/{{item.src}}"
+          dest: "{{ PRODUCT_HOME }}/{{item.dest}}"
+          mode: 0775
+  with_items:
+        - {src: wso2.j2, dest: wso2service}
+        - {src: wso2_start.sh.j2, dest: wso2_start.sh}
+  become_user: "{{ remote_user }}"
+  when: PRODUCT_NAME != "msg-broker"
+
+  
+- name: Creating wso2.sh file for service and setting access level - BROKER
+  template:
+          src: "{{ role_path }}/templates/{{item.src}}"
+          dest: "{{ PRODUCT_HOME }}/wso2/broker/{{item.dest}}"
+          mode: 0775
+  with_items:
+        - {src: wso2.j2, dest: wso2service}
+        - {src: wso2_start.sh.j2, dest: wso2_start.sh}
+  become_user: "{{ remote_user }}"
+  when: PRODUCT_NAME == "msg-broker"

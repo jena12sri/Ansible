@@ -1,0 +1,25 @@
+---
+# tasks file for mysql-datasource_add
+
+- name: Create a new database to create new datasource.
+  mysql_db:
+    name: "{{ DATASOURCE_DB_NAME }}"
+    state: present
+ #   login_host: "{{ DB_ADDRESS }}"
+    login_user: "{{ MYSQL_ADMIN_USER }}"
+    login_password: "{{ MYSQL_ADMIN_PASS }}"
+    encoding: latin1
+    collation: latin1_general_ci
+#    config_file: "/app01/db/mysql/mysql/my.cnf"
+#  become_user: "{{ user }}"
+
+# Set DB user and add it admin privileges to the created database.
+- mysql_user:
+    name: "{{ DATASOURCE_DB_USER }}"
+    host: "{{ ALLOWED_CLIENTS | default('127.0.0.1') }}"
+    password: "{{ DATASOURCE_DB_PASS }}"
+    append_privs: yes
+    priv: '{{ DATASOURCE_DB_NAME }}.*:ALL,GRANT'
+    state: present
+    login_host: "127.0.0.1"
+    login_user: "{{ MYSQL_ADMIN_USER }}"

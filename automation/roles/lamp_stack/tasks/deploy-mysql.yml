@@ -1,0 +1,13 @@
+---
+
+- name: Install mysql rpm
+  yum:
+    name=mysql56-server
+    state=present
+    disable_gpg_check=yes
+
+- name: Start the mysql service and make it to start automatically on every reboot
+  service:
+    name=mysqld
+    state=started
+    enabled=true

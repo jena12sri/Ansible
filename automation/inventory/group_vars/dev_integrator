@@ -1,0 +1,14 @@
+---
+PRODUCT_FLAG: integrator
+wso2_unbox_name: wso2ei
+VERSION: 6.1.0
+
+CLUSTER: "false"
+CLUSTER_PORT: ""
+CLUSTER_DOMAIN: ""
+AWS_ACCESS_KEY: ""
+AWS_SECRET_KEY: ""
+AWS_REGION: ""
+AWS_SECURITY_GROUP: ""
+EC2_TAG_KEY: ""
+EC2_TAG_VALUE: ""

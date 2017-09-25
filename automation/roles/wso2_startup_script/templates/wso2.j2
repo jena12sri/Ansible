@@ -1,0 +1,83 @@
+#!/bin/sh
+#
+# chkconfig: 2345 80 80
+#
+# Bash script to run {{PRODUCT_NAME}} as a service
+#
+
+{%if PRODUCT_NAME != 'msg-broker' %}
+PRODUCT_HOME={{PRODUCT_HOME}}
+{%else%}
+PRODUCT_HOME={{PRODUCT_HOME}}/wso2/broker
+{%endif%}
+
+
+{%if PRODUCT_NAME != 'msg-broker' %}
+startcmd='{{PRODUCT_HOME}}/wso2_start.sh'
+{%endif%}
+
+
+
+{%if PRODUCT_NAME == 'esb' %}
+restartcmd='{{PRODUCT_HOME}}/bin/integrator.sh restart '
+stopcmd='{{PRODUCT_HOME}}/bin/integrator.sh stop '
+{%endif%}
+
+{%if PRODUCT_NAME == 'dss' %}
+restartcmd='{{PRODUCT_HOME}}/bin/integrator.sh restart '
+stopcmd='{{PRODUCT_HOME}}/bin/integrator.sh stop '
+{%endif%}
+
+{%if PRODUCT_NAME == 'msg-broker' %}
+startcmd='{{PRODUCT_HOME}}/wso2/broker/wso2_start.sh'
+restartcmd='{{PRODUCT_HOME}}/wso2/broker/bin/wso2server.sh restart'
+stopcmd='{{PRODUCT_HOME}}/wso2/broker/bin/wso2server.sh stop'
+{%endif%}
+
+{%if PRODUCT_NAME == 'api-mgr' %}
+restartcmd='{{PRODUCT_HOME}}/bin/wso2server.sh restart '
+stopcmd='{{PRODUCT_HOME}}/bin/wso2server.sh stop'
+{%endif%}
+
+ 
+case "$1" in
+start)
+   echo "Starting WSO2 {{PRODUCT_NAME}} ..."
+   {%if PRODUCT_NAME != 'msg-broker' %}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/password-tmp"
+   {%else%}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/wso2/broker/password-tmp"
+   {%endif%} 
+   #chown appusr:appusr "{{PRODUCT_HOME}}/password-tmp" 
+   su - appusr ${startcmd}
+;;
+restart)
+   {%if PRODUCT_NAME != 'msg-broker' %}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/password-tmp"
+   {%else%}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/wso2/broker/password-tmp"
+   {%endif%}   
+
+   #chown appusr:appusr "{{PRODUCT_HOME}}/password-tmp"
+   echo "Re-starting {{PRODUCT_NAME}} ..."
+   su - appusr ${restartcmd}
+;;
+stop)
+   {%if PRODUCT_NAME != 'msg-broker' %}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/password-tmp"
+   {%else%}
+   su - appusr -c "echo {{KEY_PASS}} > {{PRODUCT_HOME}}/wso2/broker/password-tmp"
+   {%endif%}
+
+    
+   #chown appusr:appusr "{{PRODUCT_HOME}}/password-tmp"
+   echo "Stopping {{PRODUCT_NAME}} ..."
+   su - appusr ${stopcmd} 
+;;
+*)
+   echo "Usage: $0 {start|stop|restart}"
+exit 1
+esac
+
+
+

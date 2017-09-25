@@ -1,0 +1,18 @@
+---
+PRODUCT_NAME: esb
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+DSS_URL: "http://10.220.0.126:8280/services/INTG_DVG_ConfigService"
+LOAD_BALANCER_URL: "https://esbatge.int2.adtalem.com"
+CLUSTER: "true"
+CLUSTER_PORT: "5701"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAJDOJ23GRKTU2SMQA"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "DVG-INT-WSO2-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "esb_int"
+
+CLUSTER_NAME: "ATGE"
+
+SERIAL: "1"

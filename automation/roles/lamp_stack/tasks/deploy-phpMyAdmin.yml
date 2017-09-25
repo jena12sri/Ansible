@@ -1,0 +1,26 @@
+---
+
+- name: Install phpMyAdmin rpm
+  yum:
+    name=phpmyadmin
+    state=present
+    disable_gpg_check=yes
+
+- name: phpMyAdmin config file
+  template:
+    src=phpMyAdmin.conf
+    dest=/etc/httpd/conf.d/phpMyAdmin.conf
+
+- name: Restart httpd
+  service:
+    name=httpd
+    state=restarted
+
+
+#- name: Test php
+#  copy:
+#    src=phpversion.php
+#    dest=/var/www/html
+#    owner=apache
+#    group=apache
+

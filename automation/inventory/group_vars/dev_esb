@@ -1,0 +1,6 @@
+---
+PRODUCT_NAME: esb
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+DSS_URL: "http://10.220.0.126:8280/services/INTG_DVG_ConfigService"
+LOAD_BALANCER_URL: "https://esbatge.dev2.adtalem.com"
+

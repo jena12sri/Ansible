@@ -1,0 +1,20 @@
+# By default, This file contains the secret alias names and the plain text passwords enclosed with '[]' brackets
+# In Production environments, It is recommend to replace these plain text password by the encrypted values. CipherTool can be used for it.
+
+Carbon.Security.KeyStore.Password=[{{ KEY_PASS }}]
+Carbon.Security.KeyStore.KeyPassword=[{{ KEY_PASS }}]
+Carbon.Security.TrustStore.Password=[{{ KEY_PASS }}]
+UserManager.AdminUser.Password=[{{ PRODUCT_USER_PASS }}]
+Datasources.WSO2_CARBON_DB.Configuration.Password=[{{ REG_DB_PASS }}]
+Server.Service.Connector.keystorePass=[{{ KEY_PASS }}]
+
+# MB-Specific {{REG_DB_PASS}}
+Datasources.WSO2_MB_STORE_DB.Configuration.Password=[{{ REG_DB_PASS }}]
+
+#AMQP / MQTT JKS store passwords
+transports.amqp.sslConnection.keyStore.password=[{{ KEY_PASS }}]
+transports.amqp.sslConnection.trustStore.password=[{{ KEY_PASS }}]
+transports.mqtt.sslConnection.keyStore.password=[{{ KEY_PASS }}]
+transports.mqtt.sslConnection.trustStore.password=[{{ KEY_PASS }}]
+
+Axis2.Client.Password=[{{ PRODUCT_USER_PASS }}]

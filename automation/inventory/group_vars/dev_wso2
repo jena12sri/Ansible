@@ -1,0 +1,5 @@
+PRODUCT_HOME: "/app01/wso2/{{ PRODUCT_NAME }}"
+
+# To use with wso2_datasource_add role:
+DB_USER: "dbadmin"
+DB_DRIVER: "com.mysql.jdbc.Driver" 

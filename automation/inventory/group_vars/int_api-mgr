@@ -1,0 +1,5 @@
+---
+PRODUCT_NAME: api-mgr
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+
+ATGE_SERVICE_URL: "https://esbatge.int2.adtalem.com"

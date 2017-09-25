@@ -1,0 +1,24 @@
+---
+  - name: Create AMI 
+    hosts: localhost
+    connection: local
+    gather_facts: False
+    vars:
+        Name:
+          - WSO2.DSS.QA*
+          - WSO2.ESBATGE.QA*
+          - WSO2.ESBDKC.QA*
+          - WSO2.API.QA*
+          - WSO2.MB.QA*
+
+        aws_resource_tags: {
+         'Name': "{{ project_name }}.{{ component }}.{{ environment }}.{{ version }}",
+        }
+        region: us-east-2
+        project_name: WSO2
+        version: "{{ version }}"
+        project_build: "{{ project_name }}.{{ component }}.{{ environment }}.{{ version }}"
+
+    roles:
+        - { role: ec2-ami-qa }
+

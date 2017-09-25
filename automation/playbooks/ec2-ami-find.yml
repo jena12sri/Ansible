@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no 
+  tasks:
+  - ec2_ami_find:
+     aws_access_key: AKIAJGMEXUDPLS4PF32A
+     aws_secret_key: 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
+     name: "*WSO2*"
+     sort: name
+    register: ami_find

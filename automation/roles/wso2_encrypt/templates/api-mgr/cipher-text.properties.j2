@@ -1,0 +1,36 @@
+# This is the default file based secret repository, used by Secret Manager of synapse secure vault
+# 
+# By default, This file contains the secret alias names Vs the plain text passwords enclosed with '[]' brackets
+#
+# In Production environments, It is recommend to replace those plain text password by the encrypted values. CipherTool can be used for it.
+#
+
+Carbon.Security.KeyStore.Password=[{{ KEY_PASS }}]
+Carbon.Security.KeyStore.KeyPassword=[{{ KEY_PASS }}]
+Carbon.Security.TrustStore.Password=[{{ KEY_PASS }}]
+UserManager.AdminUser.Password=[{{ PRODUCT_USER_PASS }}]
+Datasources.WSO2_CARBON_DB.Configuration.Password=[{{ REG_DB_PASS }}]
+Server.Service.Connector.keystorePass=[{{ KEY_PASS }}]
+Datasource.WSO2AM_DB.configuration.password=[{{ REG_DB_PASS }}]
+Datasource.WSO2AM_STATS_DB.configuration.password=[{{ REG_DB_PASS }}]
+Datasource.WSO2MB_STORE_DB.configuration.password=[{{ REG_DB_PASS }}]
+#Data.Keystore=[{{ KEY_PASS }}]
+Broker.Password=[{{ KEY_PASS }}]
+Application.Authentication.Truststore.Password=[{{ KEY_PASS }}]
+Identity.System.Password=[{{ KEY_PASS }}]
+
+#UserStoreManager.Property.ConnectionPassword=[admin]
+#AuthManager.Password=[admin]
+#APIGateway.Password=[admin]
+#APIKeyValidator.Password=[admin]
+#APIStore.Password=[admin]
+#Security.UserTrustedRPStore.Password=[wso2carbon]
+#Security.UserTrustedRPStore.KeyPassword=[wso2carbon]
+#Identity.System.StorePass=[wso2carbon]
+#MultifactorAuthentication.XMPPSettings.XMPPConfig.XMPPPassword=[wso2carbon]
+Axis2.Https.Listener.TrustStore.Password=[{{ KEY_PASS }}]
+Axis2.Https.Listener.KeyStore.Password=[{{ KEY_PASS }}]
+Axis2.Https.Listener.KeyStore.KeyPassword=[{{ KEY_PASS }}]
+Axis2.Https.Sender.TrustStore.Password=[{{ KEY_PASS }}]
+Axis2.Https.Sender.KeyStore.Password=[{{ KEY_PASS }}]
+Axis2.Https.Sender.KeyStore.KeyPassword=[{{ KEY_PASS }}]

@@ -1,0 +1,55 @@
+# Created by https://www.gitignore.io/api/java,ansible,java-web
+# Edited by the repository contributor:
+# Bruno Amaral, brunoamaralf@gmail.com
+
+### Ansible ###
+# Ansible retry files
+*.retry
+.vault*
+*.swp
+
+### Certificate files and keystores ###
+*.pem
+*.cer
+*.jks
+
+# Test driven development on Ansible with Molecule, Testinfra and pytest
+.cache/
+.idea/
+.molecule/
+.tox/
+__pycache__/
+tests/roles
+*.pyc
+
+### Java ###
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.zip
+*.tgz
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+### Java-Web ###
+## ignoring target file
+target/
+
+# End of https://www.gitignore.io/api/java,ansible,java-web

@@ -1,0 +1,8 @@
+---
+- hosts: "{{ TARGET_HOSTS | default('local') }}"
+  vars:
+    PRODUCT_HOME: "/app01/wso2/{{ PRODUCT_NAME }}"
+
+  roles:
+     - { role: wso2_run, state: "restart"  }
+  remote_user: appusr

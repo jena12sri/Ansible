@@ -1,0 +1,3 @@
+---
+PRODUCT_NAME: dss
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"

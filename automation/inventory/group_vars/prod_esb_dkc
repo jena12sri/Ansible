@@ -1,0 +1,28 @@
+---
+PRODUCT_NAME: esb
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+DSS_URL: "https://dss.adtalem.com/services/INTG_DVG_ConfigService"
+LOAD_BALANCER_URL: "https://esbdkc.adtalem.com"
+CLUSTER: "true"
+CLUSTER_PORT: "5701"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAJ7OO6GYHDDS25VEQ"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "ATGE PROD-WS02AP-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "esb_dkc_prod"
+
+CLUSTER_NAME: "dkc"
+
+SERIAL: "1"
+
+INSTITUTIONS: "DKC,DVU"
+
+ENV: "PROD"
+
+JVM_OPTS: "-server -d64 -Xms4096m -Xmx4096m -XX:MaxMetaSpaceSize=1g -XX:+AggressiveOpts -XX:+UseParallelOldGC -XX:ReservedCodeCacheSize=512m -XX:+AlwaysPreTouch -XX:+PrintReferenceGC -XX:+ParallelRefProcEnabled -XX:MaxTenuringThreshold=15 -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:SurvivorRatio=6 -XX:NewRatio=1 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -Xloggc:$CARBON_HOME/repository/logs/gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
+
+JDK_XMS: "8g"
+JDK_XMX: "8g"

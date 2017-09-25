@@ -1,0 +1,25 @@
+{%if PRODUCT_NAME != 'msg-broker' %}
+PRODUCT_HOME={{PRODUCT_HOME}}
+{%else%}
+PRODUCT_HOME={{PRODUCT_HOME}}/wso2/broker
+{%endif%}
+
+
+{%if PRODUCT_NAME == 'esb' %}
+{{ PRODUCT_HOME }}/bin/integrator.sh start -Desb.config.dss.url={{ DSS_URL }} -Desb.loadbalancer.url={{ LOAD_BALANCER_URL }} -DAndesAckWaitTimeOut=1800000 -Desb.cluster.institutions={{INSTITUTIONS | default('')}} -Denv={{ENV}}
+{%endif%}
+
+{%if PRODUCT_NAME == 'dss' %}
+{{PRODUCT_HOME}}/bin/integrator.sh start
+
+{%endif%}
+
+{%if PRODUCT_NAME == 'msg-broker' %}
+{{PRODUCT_HOME}}/wso2/broker/bin/wso2server.sh start
+
+{%endif%}
+
+{%if PRODUCT_NAME == 'api-mgr' %}
+{{PRODUCT_HOME}}/bin/wso2server.sh start -Datgeserviceurl={{ATGE_SERVICE_URL}} -Ddkcserviceurl={{DKC_SERVICE_URL| default('')}}
+{%endif%}
+

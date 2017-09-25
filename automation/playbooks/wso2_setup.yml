@@ -1,0 +1,70 @@
+---
+##################################################################################################################
+# These variables should be passed as parameters of this playbook:
+#    PRODUCT_FLAG:                                       // the product type from integrator or api-mgr
+#    PRODUCT_NAME:                                       // the product name from esb, dss, msg-broker or api-mgr
+#    PRODUCT_USER_PASS:                                  // the admin user for wso2 products
+#    DB_ADDRESS:                                         // the database address
+#    REG_DB_PASS:                                        // admin user for wso2 databases
+#    DB_PASS:                                            //mysql root user pass
+##################################################################################################################
+- hosts: "{{ TARGET_HOSTS | default('local') }}"
+  serial: "{{SERIAL| default('2')}}"
+  vars:
+    user: "{{ ansible_env.USER }}"
+    PRODUCT_HOME: "/app01/wso2/{{ PRODUCT_NAME }}"
+    PRODUCT_USER: "{{ PRODUCT_NAME }}-admin"
+
+
+    MYSQL_ADMIN_USER: root
+    MYSQL_ADMIN_PASS: "{{ DB_PASS }}"
+
+
+    REG_DB_NAME: "{{ PRODUCT_NAME }}{{CLUSTER_NAME|default('')}}_regdb"
+    REG_DB_USER: dbadmin
+    REG_DB_URL: "jdbc:mysql://{{ DB_ADDRESS | mandatory }}:3306/{{ REG_DB_NAME }}?autoReconnect=true"
+ 
+############################# API-MGR ############################################################################
+
+    WSO2AM_DB_URL: "jdbc:mysql://{{ DB_ADDRESS }}:3306/wso2am_db?autoReconnect=true"
+    WSO2AM_DB_USER: "{{ REG_DB_USER }}"
+    WSO2AM_DB_PASS: "{{ REG_DB_PASS }}"
+
+    WSO2AM_STATS_DB_URL: "jdbc:mysql://{{ DB_ADDRESS }}:3306/wso2am_stats_db?autoReconnect=true"
+    WSO2AM_STATS_DB_USER: "{{ REG_DB_USER }}"
+    WSO2AM_STATS_DB_PASS: "{{ REG_DB_PASS }}"
+
+    WSO2MB_STORE_DB_URL: "jdbc:mysql://{{ DB_ADDRESS }}:3306/wso2mb_store_db?autoReconnect=true"
+    WSO2MB_STORE_DB_USER: "{{REG_DB_USER }}"
+    WSO2MB_STORE_DB_PASS: "{{ REG_DB_PASS }}"
+
+############################## MSG-BROKER #########################################################################
+
+    WSO2MB_DB_URL: "jdbc:mysql://{{ DB_ADDRESS }}:3306/wso2mb_db?autoReconnect=true"
+    WSO2MB_DB_USER: "{{ REG_DB_USER }}"
+    WSO2MB_DB_PASS: "{{ REG_DB_PASS }}"
+
+###################################################################################################################
+
+    DB_DRIVER: com.mysql.jdbc.Driver
+
+  roles:
+    - { role: wso2_setup_project_dependencies }
+    - { role: wso2_encrypt }
+    - { role: wso2_start_setup }
+#    - { role: wso2_encrypt, TARGET_PASS: "{{ KEY_PASS }}", TARGET_ALIAS: "key_pass" }
+#    - { role: wso2_encrypt, TARGET_PASS: "{{ DB_PASS }}", TARGET_ALIAS: "db_pass" }
+#    - { role: wso2_encrypt, TARGET_PASS: "{{ REG_DB_PASS }}", TARGET_ALIAS: "reg_db_pass" }
+#    - { role: wso2_encrypt, TARGET_PASS: "{{ PRODUCT_USER_PASS }}", TARGET_ALIAS: "product_user_pass" }
+
+
+ 
+
+
+
+
+
+
+
+
+

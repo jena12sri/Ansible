@@ -1,0 +1,130 @@
+---
+
+#####################################################################################################################################################
+
+- name: Encrypting password
+  expect:
+    command: "{{ PRODUCT_HOME }}/bin/ciphertool.sh"
+    responses:
+       "Password": "{{ KEY_PASS }}"
+       "Plain": "{{ TARGET_PASS }}"
+       "Again": "{{ TARGET_PASS }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME != "msg-broker"
+  register: output_pass    
+
+- name: Encrypting password
+  expect:
+    command: "{{ PRODUCT_HOME }}/wso2/broker/bin/ciphertool.sh"
+    responses:
+       "Password": "{{ KEY_PASS }}"
+       "Plain": "{{ TARGET_PASS }}"
+       "Again": "{{ TARGET_PASS }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+  register: output_pass_msg_broker
+
+####################################################################################################################################################
+
+- name: Cleaning properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/repository/conf/security/cipher-text.properties" regexp="{{ item }}" state=absent
+  with_items:
+    - ^"{{ TARGET_ALIAS }}"
+    - ^(.*)\[admin\]" 
+    - ^(.*)\[wso2carbon\]
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Cleaning properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/wso2/broker/conf/security/cipher-text.properties" regexp="{{ item }}" state=absent
+  with_items:
+    - ^"{{ TARGET_ALIAS }}"
+    - ^(.*)\[admin\] 
+    - ^(.*)\[wso2carbon\]
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+- name: Cleaning properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/conf/security/cipher-text.properties" regexp="{{ item }}" state=absent
+  with_items:
+    - ^"{{ TARGET_ALIAS }}"
+    - ^(.*)\[admin\] 
+    - ^(.*)\[wso2carbon\]
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator" and PRODUCT_NAME != "msg-broker"
+
+#
+
+- name: Test for line
+  shell: "grep {{ TARGET_ALIAS }} {{ PRODUCT_HOME }}/repository/conf/security/cipher-text.properties | cat"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+  register: target_line
+
+- name: Test for line
+  shell: "grep {{ TARGET_ALIAS }} {{ PRODUCT_HOME }}/wso2/broker/conf/security/cipher-text.properties | cat"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME ==  "msg-broker"
+  register: target_line
+
+- name: Test for line
+  shell: "grep {{ TARGET_ALIAS }} {{ PRODUCT_HOME }}/conf/security/cipher-text.properties | cat"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator" and PRODUCT_NAME != "msg-broker"
+  register: target_line
+
+#
+- name: Remove line if present
+  lineinfile: dest="{{ PRODUCT_HOME }}/repository/conf/security/cipher-text.properties" regexp="^{{ TARGET_ALIAS }}" state=absent
+  when: target_line != "" and PRODUCT_FLAG == "api-mgr"
+  become_user: "{{ user }}"
+
+- name: Remove line if present
+  lineinfile: dest="{{ PRODUCT_HOME }}/wso2/broker/conf/security/cipher-text.properties" regexp="^{{ TARGET_ALIAS }}" state=absent
+  when: target_line != "" and PRODUCT_NAME ==  "msg-broker"
+  become_user: "{{ user }}"
+
+- name: Remove line if present
+  lineinfile: dest="{{ PRODUCT_HOME }}/conf/security/cipher-text.properties" regexp="^{{ TARGET_ALIAS }}" state=absent
+  when: target_line != "" and PRODUCT_FLAG == "integrator" and PRODUCT_NAME != "msg-broker"
+  become_user: "{{ user }}"
+
+#
+
+- name: Include the TARGET_PASS on the properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/repository/conf/security/cipher-text.properties" line="{{ TARGET_ALIAS }}={{ output_pass.stdout_lines[11] }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Include the TARGET_PASS on the properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/wso2/broker/conf/security/cipher-text.properties" line="{{ TARGET_ALIAS }}={{ output_pass.stdout_lines[11] }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator" and PRODUCT_NAME != "msg-broker"
+
+- name: Include the TARGET_PASS on the properties file
+  lineinfile: path="{{ PRODUCT_HOME }}/conf/security/cipher-text.properties" line="{{ TARGET_ALIAS }}={{ output_pass_msg_broker.stdout_lines[11] }}"
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+  
+####################################################################################################################################################
+
+- name: Set permissions to properties file
+  file: path="{{ PRODUCT_HOME }}/repository/conf/security/cipher-text.properties" mode=0600
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Set permissions to properties file
+  file: path="{{ PRODUCT_HOME }}/conf/security/cipher-text.properties" mode=0600
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator" and PRODUCT_NAME != "msg-broker"
+
+- name: Set permissions to properties file
+  file: path="{{ PRODUCT_HOME }}/wso2/broker/conf/security/cipher-text.properties" mode=0600
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+#####################################################################################################################################################
+
+
+ 
+

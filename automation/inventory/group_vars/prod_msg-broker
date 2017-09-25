@@ -1,0 +1,15 @@
+---
+PRODUCT_NAME: msg-broker
+certs_path: "/app01/wso2/{{ product_name }}/wso2/broker/repository/resources/security"
+
+CLUSTER: "true"
+CLUSTER_PORT: "5711"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAIKYGBMEOCZL2BCRQ"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "ATGE QA-WS02AP-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "mb_prod"
+
+SERIAL: "1"

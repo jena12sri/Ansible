@@ -1,0 +1,14 @@
+---
+- hosts: "{{ TARGET_HOSTS | default('local') }}"
+  vars:
+    java_user: "{{ USER | default('ansible') }}"
+    java_home: /app01/oracle/jdk
+    java_filename: jdk-8u121-linux-x64.tar.gz
+    java_version: jdk1.8.0_121
+    jdk_zip_files_location: "{{ role_path }}/files/jdk-8u121-linux-x64.tar.gz"
+    JVM_OPTS: "-server -d64 -Xms4096m -Xmx4096m -XX:MaxMetaspaceSize=1g -XX:+AggressiveOpts -XX:+UseParallelOldGC -XX:ReservedCodeCacheSize=512m -XX:+AlwaysPreTouch -XX:+PrintReferenceGC -XX:+ParallelRefProcEnabled -XX:MaxTenuringThreshold=15 -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:SurvivorRatio=6 -XX:NewRatio=1 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -Xloggc:$CARBON_HOME/repository/logs/gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
+    JVM_OPTS_ESB: "-server -d64 -Xms8G -Xmx8G -XX:MaxMetaspaceSize=1g -XX:+AggressiveOpts -XX:+UseParallelOldGC -XX:ReservedCodeCacheSize=512m -XX:+AlwaysPreTouch -XX:+PrintReferenceGC -XX:+ParallelRefProcEnabled -XX:MaxTenuringThreshold=15 -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:SurvivorRatio=6 -XX:NewRatio=1 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -Xloggc:$CARBON_HOME/repository/logs/gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+  roles:
+    - { role: jdk_install }
+

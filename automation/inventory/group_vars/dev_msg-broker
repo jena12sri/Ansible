@@ -1,0 +1,6 @@
+---
+PRODUCT_NAME: msg-broker
+certs_path: "/app01/wso2/{{ product_name }}/wso2/broker/repository/resources/security"
+
+THRIFT_NODE_SERVER: "localhost"
+CLUSTER: "false"

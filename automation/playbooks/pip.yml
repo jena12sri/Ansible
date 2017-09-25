@@ -1,0 +1,4 @@
+- hosts : qa_esb_atge 
+  tasks :
+     - pip:
+        name: pexpect

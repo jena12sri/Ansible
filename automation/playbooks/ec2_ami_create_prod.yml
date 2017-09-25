@@ -1,0 +1,24 @@
+---
+  - name: Create AMI 
+    hosts: localhost
+    connection: local
+    gather_facts: False
+    vars:
+        Name:
+          - WSO2.DSS.PROD*
+          - WSO2.ESBATGE.PROD*
+          - WSO2.ESBDKC.PROD*
+          - WSO2.API.PROD*
+          - WSO2.MB.PROD*
+
+        aws_resource_tags: {
+         'Name': "{{ project_name }}.{{ component }}.{{ environment }}.{{ version }}",
+        }
+        region: us-east-2
+        project_name: WSO2
+        version: "{{ version }}"
+        project_build: "{{ project_name }}.{{ component }}.{{ environment }}.{{ version }}"
+
+    roles:
+        - { role: ec2-ami-prod }
+

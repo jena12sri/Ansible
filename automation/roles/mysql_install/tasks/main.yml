@@ -1,0 +1,25 @@
+---
+# tasks file for mysql_install
+
+- name: Creates install target directory
+  file: path=/app01/db mode=775 recurse=yes state=directory
+  become_user: "{{ user }}"
+
+- name: Creates install target directory
+  file: path=/app01/tmp mode=775 recurse=yes state=directory
+  become_user: "{{ user }}"
+
+- name: Copy installation files
+  copy: src="{{ role_path }}/files/bitnami-mysql-5.6.35-0-linux-x64-installer.run" dest=/app01/tmp mode=775 
+  become_user: "{{ user }}"
+
+- name: Running MySQL Install Script
+  shell: /app01/tmp/bitnami-mysql-5.6.35-0-linux-x64-installer.run --prefix /app01/db/mysql --base_user root --base_password "{{ DB_PASS }}" --mode unattended
+  become_user: "{{ user }}"
+
+- name: Creates install target directory
+  file: path=/app01/tmp state=absent
+  become_user: "{{ user }}"
+
+
+

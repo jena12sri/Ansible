@@ -1,0 +1,13 @@
+---
+PRODUCT_NAME: dss
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+
+CLUSTER: "false"
+CLUSTER_PORT: "5701"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAJDOJ23GRKTU2SMQA"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "ATGE Dev-WS02AP-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "esb_int"

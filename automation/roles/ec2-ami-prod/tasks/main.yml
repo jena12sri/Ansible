@@ -1,0 +1,52 @@
+---
+# tasks file for aws-ec2-ami
+#ec2-ami/tasks/ec2-ami.yml
+- fail: msg="The minimum Ansible version required to run is 2.0.1. To upgrade run 'sudo pip install --upgrade ansible'."
+  when: ansible_version.major|int != 2 and ansible_version.minor|int < 0 and ansible_version.revision|int < 1
+
+- name: Create ami
+  ec2_ami:
+    instance_id: "{{ instance_id }}"
+    name: "{{ project_build }}"
+    region: "{{ region }}"
+    wait: "{{ ec2_ami_wait | default(true) }}"
+    wait_timeout: "{{ wait_timeout | default(2000)}}"
+    tags: "{{ aws_resource_tags }}"
+    state: "{{ state | default('present') }}"
+    no_reboot: true
+    device_mapping:
+        - device_name: /dev/sdf
+          size: 50
+          delete_on_termination: true
+          volume_type: gp2
+  register: ec2_ami
+- name: find old AMIs
+  ec2_ami_find:
+    region: "{{ region }}"
+    owner: self
+    ami_tags:
+      "Name": "{{ item }}"
+    sort: creationDate
+    sort_order: descending
+  register: ami_find
+  with_items: "{{ Name }}"
+
+- set_fact:
+      latest_amis: "{{ latest_amis|default({}) | combine( {item.item: (item.results|first).ami_id} ) }}"
+  with_items: "{{ ami_find.results }}"
+  when: "{{ item.results|length > 0 }}"
+
+- debug:
+    var: latest_amis
+
+- name: Delete old AMI
+  ec2_ami:
+    region: "{{ region }}"
+    image_id: "{{ item.1.ami_id }}"
+    delete_snapshot: yes
+    state: absent
+  with_subelements:
+    - "{{ ami_find.results }}"
+    - results
+  when: "{{ item.0.item in latest_amis and item.1.ami_id != latest_amis[item.0.item] }}"
+

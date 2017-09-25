@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  remote_user: srv-ansible 
+  roles:
+    - aws-ec2-ami

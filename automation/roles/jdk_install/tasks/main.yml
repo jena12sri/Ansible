@@ -1,0 +1,95 @@
+---
+# tasks file for jdk_install
+  
+     - name: Creates install target directory
+       file: path="{{ java_home }}" mode=775 recurse=yes state=directory
+       become_user: "{{ java_user }}" 
+     
+     - name: Copy installation files
+       copy: src="{{ jdk_zip_files_location }}" dest="{{ java_home }}"
+       become_user: "{{ java_user }}"      
+  
+# Uncompressing JDK tar.gz file
+     - name: Uncompress Installation files
+       become_user: "{{ java_user }}"
+       unarchive: src="{{ java_home }}/{{ java_filename }}" dest="{{ java_home }}" copy=no extra_opts="--strip-components=1"
+
+     - name: Removing not used files in java home
+       file: path="{{ java_home }}/{{ java_filename }}" state=absent
+       become_user: "{{ java_user }}"
+
+# Setting JAVA_HOME and adding Java to the PATH 
+
+###################### Add a line to a file if it does not exist, without passing regexp ####################
+
+     - name: Cleaning JAVA_HOME from .bash_profile and .bashrc  
+       lineinfile: path="{{ item }}" line='JAVA_HOME=' state=absent
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"
+     
+     - name: Cleaning PATH from .bash_profile and .bashrc  
+       lineinfile: path="{{ item }}" line='PATH=' state=absent
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc" 
+       become_user: "{{ java_user }}"
+
+     - name: Setting $PATH and adding java install folder to the JAVA_HOME
+       lineinfile:
+         dest="{{ item }}"
+         line='PATH=$JAVA_HOME/bin:$PATH:$HOME/.local/bin:$HOME/bin'
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"       
+     
+     - name: Setting $JAVA_HOME
+       lineinfile: path="{{ item }}" line='JAVA_HOME={{ java_home }}' insertbefore='^PATH='
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc" 
+       become_user: "{{ java_user }}"
+
+###################
+
+     - name: export PATH 
+       lineinfile: dest="{{ item }}" line='export PATH'
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"
+
+
+     - name: export JAVA_HOME
+       lineinfile: dest="{{ item }}" insertbefore='export PATH' line='export JAVA_HOME'   
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"     
+
+
+#################################
+     - name: Cleaning JVM_MEM_OPTS from .bash_profile and .bashrc
+       lineinfile: path="{{ item }}" line='export JVM_MEM_OPTS=' state=absent
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"
+
+     - name: Addind JVM_MEM_OPTS into .bash_profile and .bashrc ESB QA/PROD
+       lineinfile: path="{{ item }}" line='export JVM_MEM_OPTS=\"{{ JVM_OPTS_ESB  }}\"'
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"
+       when: ("qa_esb" in group_names or "prod_esb" in group_names)
+
+     - name: Addind JVM_MEM_OPTS into .bash_profile and .bashrc OTHER PRODUCTS
+       lineinfile: path="{{ item }}" line='export JVM_MEM_OPTS=\"{{ JVM_OPTS  }}\"'
+       with_items:
+         - "~/.bash_profile"
+         - "~/.bashrc"
+       become_user: "{{ java_user }}"
+       when: ("qa_esb" not in group_names and "prod_esb" not in group_names)

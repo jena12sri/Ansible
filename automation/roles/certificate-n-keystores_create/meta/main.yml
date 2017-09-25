@@ -1,0 +1,14 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Bruno Amaral F, brunoamaralf@gmail.com 
+  description: Self signed certificate and keystore creation
+  license: "Apache"
+  min_ansible_version: 
+  platforms:
+    - name: EL
+      versions:
+      - all
+  galaxy_tags:
+    - web

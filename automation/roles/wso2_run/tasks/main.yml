@@ -1,0 +1,158 @@
+---
+# tasks file for wso2_run
+
+- name: Stop wso2 product INTEGRATOR
+  shell: "{{ PRODUCT_HOME }}/bin/integrator.sh stop" 
+  when: 
+    - state == "stop"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+- name: Kill wso2 product INTEGRATOR 
+  action: command killall -9 java
+  ignore_errors: True
+  when:
+    - state == "stop"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+#########################################
+
+- name: Stop wso2 product MSG-BROKER
+  shell: "{{ PRODUCT_HOME }}/wso2/broker/bin/wso2server.sh stop"
+  when:
+    - state == "stop"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "msg-broker"
+
+- name: Kill wso2 product MSG-BROKER 
+  action: command killall -9 java
+  ignore_errors: True
+  when:
+    - state == "stop"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "msg-broker"
+#########################################
+
+- name: Stop wso2 product API-MGR
+  shell: "{{ PRODUCT_HOME }}/bin/wso2server.sh stop"
+  when:
+    - state == "stop"
+    - PRODUCT_FLAG == "api-mgr"
+
+- name: Kill wso2 product API-MGR
+  action: command killall -9 java
+  ignore_errors: True
+  when:
+    - state == "stop"
+    - PRODUCT_FLAG == "api-mgr"
+##########################################
+
+#########################################
+#
+- name: Create tmp file
+  lineinfile: path="{{ PRODUCT_HOME }}/password-tmp" create=yes line="{{ KEY_PASS }}"  
+  when: 
+    - PRODUCT_NAME != "msg-broker"
+    - state == "start" 
+
+- name: Create tmp file
+  lineinfile: path="{{ PRODUCT_HOME }}/wso2/broker/password-tmp" create=yes line="{{ KEY_PASS }}"  
+  when: 
+    - PRODUCT_NAME == "msg-broker"
+    - state == "start"
+#
+#########################################
+
+- name: Start wso2 product INTEGRATOR/ESB  
+  shell: "{{ PRODUCT_HOME }}/bin/integrator.sh start -Desb.config.dss.url={{ DSS_URL }} -Desb.loadbalancer.url={{ LOAD_BALANCER_URL }} -DAndesAckWaitTimeOut=1800000 -Desb.cluster.institutions={{INSTITUTIONS | default('')}} -Denv={{ENV}}"
+  when: 
+    - state == "start"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "esb"
+
+########################################
+
+- name: Start wso2 product INTEGRATOR/DSS
+  shell: "{{ PRODUCT_HOME }}/bin/integrator.sh start"
+  when:
+    - state == "start"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "dss"
+
+########################################
+
+- name: Start wso2 product INTEGRATOR/MSG-BROKER
+  shell: "{{ PRODUCT_HOME }}/wso2/broker/bin/wso2server.sh start"  
+  when: 
+    - state == "start" 
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "msg-broker"
+
+########################################
+
+- name: Start wso2 product API-MGR
+  shell: "{{ PRODUCT_HOME }}/bin/wso2server.sh start -Datgeserviceurl={{ATGE_SERVICE_URL}} -Ddkcserviceurl={{DKC_SERVICE_URL| default('')}}"  
+  when: 
+    - state == "start"
+    - PRODUCT_FLAG == "api-mgr"
+ 
+#########################################
+   
+- name: Restart wso2 product INTEGRATOR
+  shell: "{{ PRODUCT_HOME }}/bin/integrator.sh restart"
+  when:
+    - state == "restart"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+#########################################
+
+- name: Restart wso2 product MSG-BROKER
+  shell: "{{ PRODUCT_HOME }}/wso2/broker/bin/wso2server.sh stop"
+  when:
+    - state == "restart"
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "msg-broker"
+
+
+- name: Wait Broker Start to Start the next
+  wait_for:
+    host: "{{inventory_hostname}}"
+    port: 9446
+    delay: 40
+    state: drained
+  when:
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME == "msg-broker"
+    - CLUSTER == "true"
+    - state == "start"
+
+
+
+
+#########################################
+
+- name: Restart wso2 product API-MGR
+  shell: "{{ PRODUCT_HOME }}/bin/wso2server.sh stop"
+  when:
+    - state == "restart"
+    - PRODUCT_FLAG == "api-mgr"
+
+#########################################
+#- name: Remove tmp file if present
+#  file: path="{{ PRODUCT_HOME}}/password-tmp" state=absent
+
+#########################################
+
+
+- name: Wait Instance to Start before start the next
+  wait_for:
+    host: "{{inventory_hostname}}"
+    port: 9443
+    delay: 90
+    state: drained
+  when:
+    - PRODUCT_NAME == "esb"
+    - state == "start"
+    - CLUSTER == "true"
+

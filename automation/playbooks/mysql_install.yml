@@ -1,0 +1,7 @@
+---
+- hosts: "{{ TARGET_HOSTS | default('local') }}" 
+  vars:
+    user: "{{ USER }}"
+#    DB_PASS: "{{ DB_PASS }}"
+  roles:
+    - { role: mysql_install }

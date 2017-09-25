@@ -1,0 +1,89 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:  
+    group: 
+       - sg-a9e105c1
+       - sg-2f93d946
+    subnets:
+       - subnet-b3fe4eda
+       - subnet-bb8c92f1
+    zone:
+       - us-east-2a
+       - us-east-2c
+    regi: "us-east-2"
+  tasks:
+  #launch configuration
+  - ec2_lc:
+     aws_access_key: AKIAJGMEXUDPLS4PF32A
+     aws_secret_key: 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
+     ec2_url: https://ec2.eu-east-2.amazonaws.com
+     name: '{{lc}}'
+     image_id: "{{ami}}"
+     security_groups: "{{group}}"
+     region: "{{ regi }}"
+     instance_type: "{{ ec2_instance_type | default('t2.xlarge') }}"
+     instance_monitoring: "{{ ec2_lc_instance_monitoring | default(True) }}"
+     ebs_optimized: "{{ ec2_ebs_optimized | default(omit) }}"
+     assign_public_ip: "{{ ec2_assign_public_ip | default('no') }}"
+     volumes: "{{ ec2_volumes | default(omit) }}"
+     state: "{{ state | default('present') }}"
+    tags: aws_lc
+    register: aws_lc
+
+#  - name: Get details of a launch configuration by name
+#    ec2_lc_facts:
+#      name: "{{ aws_lc }}"
+#      region: "{{ regi | d(omit) }}"
+#      profile: "{{ boto_profile | d(omit) }}"
+#    register: lc_results
+
+#  - name: Fail if there are no matching launch configurations
+#    fail:
+#      msg: "No launch configurations matched on the name \"{{ aws_lc }}\""
+#    when: not lc_results.launch_configurations
+
+#  - name: Grab first (and only) result in list
+#    set_fact: lc_current= "{{ lc_results.launch_configurations[0] }}"
+
+  - name: If we have an ASG identifier, update the ASG to use the launch configuration
+    ec2_asg:
+      aws_access_key: AKIAJGMEXUDPLS4PF32A
+      aws_secret_key: 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
+      name: "{{ asg }}"
+      state: present
+      launch_config_name: "{{ lc }}"
+      health_check_type: ELB
+      health_check_period: 700
+      default_cooldown: 900
+      lc_check: no
+      region: "{{ regi | d(omit) }}"
+      profile: "{{ boto_profile | d(omit) }}"
+      vpc_zone_identifier: '{{ subnets}}'
+#      min_size: 2
+#      max_size: 4
+#      desired_capacity: 2
+    when: asg is defined
+
+#  - name: "Find old Launch Configs"
+#    ec2_lc_find:
+#      aws_access_key: AKIAJGMEXUDPLS4PF32A
+#      aws_secret_key: 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
+#      profile: "{{ boto_profile | d(omit) }}"
+#      region: "{{ regi }}"
+#      name_regex: "*ESB*"
+#     #sort_order: descending
+#     #limit: 2
+#    register: old_launch_config
+
+#  - name: "Remove old Launch Configs"
+#    ec2_lc:
+#      aws_access_key: AKIAJGMEXUDPLS4PF32A
+#      aws_secret_key: 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
+#      profile: "{{ boto_profile }}"
+#      region: "{{ regi }}"
+#      name: "{{ item.name }}"
+#      state: absent
+#    with_items: old_launch_config.results
+#    ignore_errors: yes

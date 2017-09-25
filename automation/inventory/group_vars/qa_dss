@@ -1,0 +1,17 @@
+---
+PRODUCT_NAME: dss
+certs_path: "/app01/wso2/{{ product_name }}/repository/resources/security"
+
+CLUSTER: "false"
+CLUSTER_PORT: "5701"
+CLUSTER_DOMAIN: "localhost"
+AWS_ACCESS_KEY: "AKIAJDOJ23GRKTU2SMQA"
+AWS_SECRET_KEY: "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"
+AWS_REGION: "us-east-2"
+AWS_SECURITY_GROUP: "ATGE Dev-WS02AP-SG"
+EC2_TAG_KEY: "ClusterName"
+EC2_TAG_VALUE: "esb_int"
+
+
+JVM_OPTS: "-server -d64 -Xms4096m -Xmx4096m -XX:MaxMetaSpaceSize=1g -XX:+AggressiveOpts -XX:+UseParallelOldGC -XX:ReservedCodeCacheSize=512m -XX:+AlwaysPreTouch -XX:+PrintReferenceGC -XX:+ParallelRefProcEnabled -XX:MaxTenuringThreshold=15 -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:SurvivorRatio=6 -XX:NewRatio=1 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -Xloggc:$CARBON_HOME/repository/logs/gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.rmi.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+

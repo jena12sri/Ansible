@@ -1,0 +1,9 @@
+---
+# vars file for jdk_install
+
+#java_home: /app01/oracle/jdk
+#java_filename: jdk-8u121-linux-x64.tar.gz
+#java_version: jdk1.8.0_121
+#java_user: ansible
+#java_group: dba
+#jdk_zip_files_location: "{{ role_path }}/files/jdk-8u121-linux-x64.tar.gz"

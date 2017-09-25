@@ -1,0 +1,9 @@
+---
+- hosts: "{{ TARGET_HOSTS | default('local') }}"
+  serial: "{{SERIAL| default('2')}}"
+  vars:
+    PRODUCT_HOME: "/app01/wso2/{{ PRODUCT_NAME }}"
+    remote_user: "appusr"    
+  roles:
+    - { role: wso2_startup_script, state: "start"  }
+  remote_user: appusr

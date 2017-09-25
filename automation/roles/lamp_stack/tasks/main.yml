@@ -1,0 +1,13 @@
+---
+
+- include: deploy-httpd.yml 
+  tags: httpd
+
+- include: deploy-php.yml 
+  tags: php
+
+- include: deploy-mysql.yml
+  tags: mysql
+
+#- include: deploy-phpMyAdmin.yml 
+#  tags: phpMyAdmin

@@ -1,0 +1,158 @@
+---
+
+########################################################################## Create the certificate(s) #################################################################################
+- name: Cleanning Certs folder. Removing keystore from folder.
+  file: path="{{ keystore }}" state=absent
+  become_user: "{{ user }}"
+
+- name: Cleanning Certs folder. Removing truststore from folder.
+  file: path="{{ truststore }}" state=absent
+  become_user: "{{ user }}"
+
+- name: Generating keystore and SSL key. Adding SSL key to the keystore.
+  shell: keytool -genkey -noprompt -trustcacerts -alias {{ alias }} -keyalg RSA -keypass {{ KEY_PASS | mandatory }} -storepass {{ KEY_PASS | mandatory }} -keystore {{ keystore }} -keysize {{ keysize }} -validity {{ expires }} -dname "CN={{ item.cname }}, OU={{ item.organization_unit }}, O={{ item.organization }}, L={{ item.locality }}  S={{ item.state }} C={{ item.country }}"
+  with_items: "{{ selfsignedcertificate }}"
+  become_user: "{{ user }}"
+
+- name: Exporting Self-Signed Certificate.
+  shell: keytool -export -alias {{ alias }} -storepass {{ KEY_PASS | mandatory }} -file {{ selfsigned_cert }}  -keystore {{ keystore }}
+  become_user: "{{ user }}"
+
+- name: Creating truststore and adding Self-Signed Certificate to it.
+  shell: yes | keytool -import -v -trustcacerts -alias {{ alias }} -file {{ selfsigned_cert }} -keystore {{ truststore }} -keypass {{ KEY_PASS | mandatory }} -storepass {{ KEY_PASS | mandatory }}
+  become_user: "{{ user }}"
+
+- name: Cleanning Certs folder. Removing Self-signed certificate from folder.
+  file: path="{{ selfsigned_cert }}" state=absent
+  become_user: "{{ user }}"
+
+#######################################################################################################################################################################################
+
+- name: Copying certificates 
+  copy: src="{{ item.path }}" dest="{{ certs_path }}" owner="{{ user }}" mode=0775
+  with_items:
+     - { path: "{{ role_path }}/files/compliocom.crt" }
+     - { path: "{{ role_path }}/files/myworkinfocom.crt" }
+     - { path: "{{ role_path }}/files/salesforcecom.crt" }
+     - { path: "{{ role_path }}/files/psmdevdevryedu.crt" }
+     - { path: "{{ role_path }}/files/testsalesforcecom.crt" }
+     - { path: "{{ role_path }}/files/www4dncsolutioncom.crt" }
+     - { path: "{{ role_path }}/files/smtprootlocal.crt" }		
+     - { path: "{{role_path}}/files/awsg5.crt"}
+     - { path: "{{role_path}}/files/intdss.crt"}
+     - { path: "{{role_path}}/files/devesb.crt"}
+     - { path: "{{role_path}}/files/intesb.crt"}
+     - { path: "{{role_path}}/files/devdss.crt"}
+     - { path: "{{role_path}}/files/dssqa2adtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbatgeqa2adtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbdkcqa2adtalemcom.crt"}
+     - { path: "{{role_path}}/files/dssadtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbatgeadtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbdkcadtalemcom.crt"}
+     - { path: "{{role_path}}/files/psmqadevryedu.crt"}
+     - { path: "{{role_path}}/files/psmprddevryedu.crt"}
+     - { path: "{{role_path}}/files/www4dncsolutioncom.crt"}
+     - { path: "{{role_path}}/files/portalthedevrycommonscom.crt"}
+     - { path: "{{role_path}}/files/-salesforcecom.crt"}
+     - { path: "{{role_path}}/files/loginsalesforcecom.crt"}
+    # - { path: "{{role_path}}/files/AmazonRootCA1.crt"}
+    # - { path: "{{role_path}}/files/Amazon.crt"}
+     - { path: "{{role_path}}/files/betainstructurecom.crt"}
+    # - { path: "{{role_path}}/files/DigiCertGlobalRootCA.crt"}
+    # - { path: "{{role_path}}/files/DigiCertSHA2SecureServerCA.crt"}
+     - { path: "{{role_path}}/files/-canvaslmscom.crt"}
+
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "esb"
+
+- name: Adding Services Certificates
+  shell: yes | keytool -import -v -trustcacerts -alias {{ item.alias }} -file {{ item.path  }} -keystore {{ truststore }} -keypass {{ KEY_PASS | mandatory }} -storepass {{ KEY_PASS | mandatory }}
+  with_items: 
+     - { path: "{{ certs_path }}/compliocom.crt", alias: "compliocom" }
+     - { path: "{{ certs_path }}/myworkinfocom.crt", alias: "myworkinfocom" }
+     - { path: "{{ certs_path }}/salesforcecom.crt", alias: "salesforcecom" }
+     - { path: "{{ certs_path }}/psmdevdevryedu.crt", alias: "psmdevdevryedu" }
+     - { path: "{{ certs_path }}/testsalesforcecom.crt", alias: "testsalesforcecom" }
+     - { path: "{{ certs_path }}/www4dncsolutioncom.crt", alias: "www4dncsolutioncom" }
+     - { path: "{{ certs_path }}/smtprootlocal.crt", alias: "smtprootlocal" }
+     - { path: "{{ certs_path }}/awsg5.crt", alias: "awsg5" }
+     - { path: "{{ certs_path }}/intdss.crt", alias: "intdss" }
+     - { path: "{{ certs_path }}/devesb.crt", alias: "devesb" }
+     - { path: "{{ certs_path }}/intesb.crt", alias: "intesb" }
+     - { path: "{{ certs_path }}/devdss.crt", alias: "devdss" }
+     - { path: "{{ certs_path }}/psmqadevryedu.crt", alias: "psmqadevryedu" }
+     - { path: "{{ certs_path }}/psmprddevryedu.crt", alias: "psmprddevryedu" }
+     - { path: "{{ certs_path }}/dssqa2adtalemcom.crt", alias: "dssqa2adtalemcom" }
+     - { path: "{{ certs_path }}/esbatgeqa2adtalemcom.crt", alias: "esbatgeqa2adtalemcom" }
+     - { path: "{{ certs_path }}/esbdkcqa2adtalemcom.crt", alias: "esbdkcqa2adtalemcom" }
+     - { path: "{{ certs_path }}/dssadtalemcom.crt", alias: "dssadtalemcom" }
+     - { path: "{{ certs_path }}/esbatgeadtalemcom.crt", alias: "esbatgeadtalemcom" }
+     - { path: "{{ certs_path }}/esbdkcadtalemcom.crt", alias: "esbdkcadtalemcom" }
+     - { path: "{{ certs_path }}/portalthedevrycommonscom.crt", alias: "portalthedevrycommonscom" }
+     - { path: "{{ certs_path }}/loginsalesforcecom.crt", alias: "loginsalesforcecom" }
+     - { path: "{{ certs_path }}/-salesforcecom.crt", alias: "-salesforcecom" }
+     #- { path: "{{ certs_path }}/AmazonRootCA1.crt", alias: "AmazonRootCA1" }
+     #- { path: "{{ certs_path }}/Amazon.crt", alias: "Amazon" }
+     - { path: "{{ certs_path }}/betainstructurecom.crt", alias: "betainstructurecom" }
+     #- { path: "{{ certs_path }}/DigiCertGlobalRootCA.crt", alias: "DigiCertGlobalRootCA" }
+     #- { path: "{{ certs_path }}/DigiCertSHA2SecureServerCA.crt", alias: "DigiCertSHA2SecureServerCA" }
+     - { path: "{{ certs_path }}/-canvaslmscom.crt", alias: "-canvaslmscom" }
+
+#     - { path: "{{ certs_path }}/www4dncsolutioncom.crt", alias: "www4dncsolutioncom" }
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "esb"
+
+
+
+- name: Copying certificates MSG BROKER
+  copy: src="{{ item.path }}" dest="{{ certs_path }}" owner="{{ user }}" mode=0775
+  with_items:
+     - { path: "{{role_path}}/files/awsg5.crt"}
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "msg-broker"
+
+
+- name: Adding Services Certificates MSG BROKER
+  shell: yes | keytool -import -v -trustcacerts -alias {{ item.alias }} -file {{ item.path  }} -keystore {{ truststore }} -keypass {{ KEY_PASS | mandatory }} -storepass {{ KEY_PASS | mandatory }}
+  with_items:
+     - { path: "{{ certs_path }}/awsg5.crt", alias: "awsg5" }
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "msg-broker"
+
+
+
+- name: Copying certificates API MGR
+  copy: src="{{ item.path }}" dest="{{ certs_path }}" owner="{{ user }}" mode=0775
+  with_items:
+     - { path: "{{role_path}}/files/devesb.crt"}
+     - { path: "{{role_path}}/files/intesb.crt"}
+     - { path: "{{role_path}}/files/esbatgeqa2adtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbdkcqa2adtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbatgeadtalemcom.crt"}
+     - { path: "{{role_path}}/files/esbdkcadtalemcom.crt"}
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "api-mgr"
+
+
+- name: Adding Services Certificates API MGR
+  shell: yes | keytool -import -v -trustcacerts -alias {{ item.alias }} -file {{ item.path  }} -keystore {{ truststore }} -keypass {{ KEY_PASS | mandatory }} -storepass {{ KEY_PASS | mandatory }}
+  with_items:
+     - { path: "{{ certs_path }}/devesb.crt", alias: "devesb" }
+     - { path: "{{ certs_path }}/intesb.crt", alias: "intesb" }
+     - { path: "{{ certs_path }}/esbatgeqa2adtalemcom.crt", alias: "esbatgeqa2adtalemcom" }
+     - { path: "{{ certs_path }}/esbdkcqa2adtalemcom.crt", alias: "esbdkcqa2adtalemcom" }
+     - { path: "{{ certs_path }}/esbatgeadtalemcom.crt", alias: "esbatgeadtalemcom" }
+     - { path: "{{ certs_path }}/esbdkcadtalemcom.crt", alias: "esbdkcadtalemcom" }
+  become_user: "{{ user }}"
+  when:
+     - PRODUCT_NAME == "api-mgr"
+
+
+
+#########################################################################################################################################################################################
+

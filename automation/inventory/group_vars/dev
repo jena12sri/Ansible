@@ -1,0 +1,8 @@
+---
+DB_ADDRESS: intgwso2dev.cqgowjzwcafp.us-east-2.rds.amazonaws.com 
+#DB_PASS: 
+#KEY_PASS: 
+#KEYSTORE_PASS:   
+#TRUSTSTORE_PASS: 
+#PUPASS: test123456
+USER: appusr

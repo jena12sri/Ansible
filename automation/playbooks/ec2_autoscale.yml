@@ -1,0 +1,154 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars_prompt:
+  #user enters the name of the ami image to maje an auto scaling group from
+    - name: "image"
+      prompt: "enter the AMI image id"
+      private: no
+
+  #user enters the name that will be used to name everything else in the architecture
+    - name: "architecture"
+      prompt: "enter the desired name for your infrastructure"
+      private: no
+  vars:  
+    group: "sg-98806ef0"
+    subnets:
+       - subnet-b0fe4ed9
+       - subnet-b98c92f3
+    zone:
+       - us-east-2a
+       - us-east-2c
+    regi: "us-east-2"
+    loaddb: "dss-qa2-adtalem-com"
+    auto_sc: "{{architecture}}_asg"
+    lc: "{{architecture}}_lc"
+  #contains the variables ami_access and ami_secret
+  #vars_files:
+    #-amiKeys.yml
+    #-regionInfo.yml
+  tasks:
+  #load balancer
+  #- ec2_elb_lb:
+     #name: middleware-wso2-dev2-devry-edu
+     #scheme: internal
+     #idle_timeout: 960
+     #security_group_ids: sg-3de3f454
+     #state: present
+     #ec2_url: https://ec2.eu-east-2.amazonaws.com
+     #instance_ids:
+     #  - i-07e63b6e52c267aa0
+     #subnets:
+     #  - subnet-35f45c5c
+     #  - subnet-16c9d95c
+     #listeners:
+     #  - protocol: http # options are http, https, ssl, tcp
+     #    load_balancer_port: 80
+     #    instance_port: 8280
+     #  - protocol: http # options are http, https, ssl, tcp
+     #    load_balancer_port: 8280
+     #    instance_port: 8280
+     #health_check:
+     #    ping_protocol: http # options are http, https, ssl, tcp
+     #    ping_port: 8280
+     #    ping_path: "/services" # not required for tcp or ssl
+     #    response_timeout: 5 # seconds
+     #    interval: 6 # seconds
+     #    unhealthy_threshold: 2
+     #    healthy_threshold: 2
+  #launch configuration
+  - ec2_lc:
+     aws_access_key: AKIAJGMEXUDPLS4PF32A
+     aws_secret_key: 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
+     ec2_url: https://ec2.eu-east-2.amazonaws.com
+     name: '{{lc}}'
+     image_id: "{{image}}"
+     security_groups: "{{group}}"
+     region: "{{ regi }}"
+     instance_type: "{{ ec2_instance_type | default('t2.large') }}"
+     instance_monitoring: "{{ ec2_lc_instance_monitoring | default(True) }}"
+     ebs_optimized: "{{ ec2_ebs_optimized | default(omit) }}"
+     assign_public_ip: "{{ ec2_assign_public_ip | default('no') }}"
+     volumes: "{{ ec2_volumes | default(omit) }}"
+     state: "{{ state | default('present') }}"
+    tags: aws_lc
+    register: aws_lc
+  #auto scaling group
+  - ec2_asg:
+     aws_access_key: AKIAJGMEXUDPLS4PF32A
+     aws_secret_key: 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
+     ec2_url: https://ec2.eu-east-2.amazonaws.com
+     name: '{{ auto_sc }}'
+     load_balancers: '{{ loaddb }}'
+     availability_zones: "{{ zone }}" 
+     launch_config_name: '{{ lc }}'
+     min_size: 0
+     max_size: 4
+     desired_capacity: 0
+     vpc_zone_identifier: '{{ subnets}}'
+     tags:
+       - Name: "CAL-WSOQ01DS0"
+     health_check_type: ELB
+     wait_for_instances: true
+     state: present
+    register: asg_result
+  #auto scaling policy
+
+  - name: Configure Scaling Policies
+    ec2_scaling_policy:
+      aws_access_key: AKIAJGMEXUDPLS4PF32A
+      aws_secret_key: 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
+      region: "{{ regi }}"
+      name: "{{ item.name }}"
+      asg_name: "{{auto_sc}}"
+      state: present
+      adjustment_type: "{{ item.adjustment_type }}"
+      min_adjustment_step: "{{ item.min_adjustment_step }}"
+      scaling_adjustment: "{{ item.scaling_adjustment }}"
+      cooldown: "{{ item.cooldown }}"
+    with_items:
+      - name: "Increase Group Size"
+        adjustment_type: "ChangeInCapacity"
+        scaling_adjustment: +1
+        min_adjustment_step: 1
+        cooldown: 600
+      - name: "Decrease Group Size"
+        adjustment_type: "ChangeInCapacity"
+        scaling_adjustment: -1
+        min_adjustment_step: 1
+        cooldown: 900
+    register: sp_result
+#  - name: Determine Metric Alarm configuration
+#    set_fact:
+#      metric_alarms:
+#        - name: "{{ asg_name }}-ScaleUp"
+#          comparison: ">="
+#          threshold: 80.0
+#          alarm_actions:
+#            - "{{ sp_result.results[0].arn }}"
+#        - name: "{{ asg_name }}-ScaleDown"
+#          comparison: "<="
+#          threshold: 20.0
+#          alarm_actions:
+#            - "{{ sp_result.results[1].arn }}"
+#
+#  - name: Configure Metric Alarms and link to Scaling Policies
+#    ec2_metric_alarm:
+#      region: "{{ regi }}"
+#      name: "{{ item.name }}"
+#      state: present
+#      metric: "CPUUtilization"
+#      namespace: "AWS/EC2"
+#      statistic: "Average"
+#      comparison: "{{ item.comparison }}"
+#      threshold: "{{ item.threshold }}"
+#      period: 60
+#      evaluation_periods: 5
+#      unit: "Percent"
+#      dimensions:
+#        AutoScalingGroupName: "{{ asg_name }}"
+#      alarm_actions: "{{ item.alarm_actions }}"
+#    with_items: metric_alarms
+#    when: max_size > 1
+#    register: ma_result

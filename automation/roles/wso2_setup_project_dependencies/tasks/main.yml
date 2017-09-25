@@ -1,0 +1,344 @@
+---
+# tasks file for wso2_setup
+
+################### API-MGR ####################
+
+- name: Copy MySQL connector files
+  copy: src="{{ role_path }}/files/mysql-connector-java-5.1.41-bin.jar" dest="{{ PRODUCT_HOME }}/repository/components/lib/"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Copy war file #Install war defined here on API Manager https://docs.wso2.com/display/AM210/Migrating+the+APIs+to+a+Different+Environment
+  copy: src="{{ role_path }}/files/api-import-export-2.1.0-v2.war" dest="{{ PRODUCT_HOME }}/repository/deployment/server/webapps/"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Edit repository/conf/datasources/master-datasources.xml
+  template:
+    src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/master-datasources.xml.j2"
+    dest: "{{ PRODUCT_HOME }}/repository/conf/datasources/master-datasources.xml"
+    mode: 0775
+  with_items:
+    - { db_name: "{{ REG_DB_NAME }}", url: "{{ REG_DB_URL }}", driver: "{{ DB_DRIVER }}", user: "{{ REG_DB_USER}}", pass: "{{ REG_DB_PASS }}" }
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+- name: Edit conf files
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/repository/conf/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: registry.xml.j2, dest: registry.xml }
+    - { src: user-mgt.xml.j2, dest: user-mgt.xml }
+    - { src: identity.xml.j2, dest: identity/identity.xml }
+    - { src: EndpointConfig.properties.j2, dest: identity/EndpointConfig.properties }
+    - { src: application-authentication.xml.j2, dest: identity/application-authentication.xml }
+    - { src: broker.xml.j2, dest: broker.xml }
+    - { src: catalina-server.xml.j2, dest: tomcat/catalina-server.xml }
+    - { src: tomcat-users.xml.j2, dest: tomcat/tomcat-users.xml }
+    - { src: data-bridge-config.xml.j2, dest: data-bridge/data-bridge-config.xml }
+    - { src: axis2.xml.j2,dest: axis2/axis2.xml }
+    - { src: carbon.xml.j2, dest: carbon.xml }
+    - { src: api-manager.xml.j2, dest: api-manager.xml }
+    - { src: jndi.properties.j2, dest: jndi.properties }
+    - { src: log4j.properties.j2, dest: log4j.properties }
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+
+- name: Edit site.json
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/repository/deployment/server/jaggeryapps/publisher/site/conf/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: site.json.j2, dest: site.json }
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+
+- name: Edit wso2server.sh 
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/bin/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: wso2server.sh.j2, dest: wso2server.sh }
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "api-mgr"
+
+
+- name: Update Timeout Settings API-MGR
+  lineinfile: path="{{ PRODUCT_HOME }}/repository/conf/passthru-http.properties" line="http.socket.timeout=960000"
+  when:
+    - PRODUCT_FLAG == "api-mgr"
+
+
+
+
+- name: stat module to check if API-MGR mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/dbscripts/mysql5.7.sql
+  register: dbscripts_mysql_apr_mgr
+
+- name: stat module to check if API-MGR mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/dbscripts/apimgt/mysql5.7.sql
+  register: apimgt_mysql_apr_mgr
+
+  # RDS configuration to avoid use != mysql5.7
+- name: Rename API-MGR /dbscripts/mysql.sql to /dbscripts/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/dbscripts/mysql.sql {{ PRODUCT_HOME }}/dbscripts/mysql.sql.old
+  when: 
+    - dbscripts_mysql_apr_mgr.stat.exists
+    - PRODUCT_FLAG == "api-mgr"
+
+- name: Rename API-MGR /dbscripts/apimgt/mysql.sql to /dbscripts/apimgt/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/dbscripts/apimgt/mysql.sql {{ PRODUCT_HOME }}/dbscripts/apimgt/mysql.sql.old
+  when: 
+    - apimgt_mysql_apr_mgr.stat.exists
+    - PRODUCT_FLAG == "api-mgr"
+
+  # RDS configuration to use mysql5.7.sql
+- name: Rename API-MGR /dbscripts/mysql5.7.sql to /dbscripts/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/dbscripts/mysql5.7.sql {{ PRODUCT_HOME }}/dbscripts/mysql.sql
+  when: 
+    - dbscripts_mysql_apr_mgr.stat.exists
+    - PRODUCT_FLAG == "api-mgr"
+
+- name: Rename API-MGR /dbscripts/apimgt/mysql5.7.sql to /dbscripts/apimgt/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/dbscripts/apimgt/mysql5.7.sql {{ PRODUCT_HOME }}/dbscripts/apimgt/mysql.sql
+  when: 
+    - apimgt_mysql_apr_mgr.stat.exists
+    - PRODUCT_FLAG == "api-mgr"
+
+#- name: stat module to check if API-MGR dbscripts/apimgt
+#  stat: path={{ PRODUCT_HOME }}/dbscripts/apimgt
+#  register: dbscripts_apimgt_folder
+
+#- name: Rename API-MGR /dbscripts/apimgt/ to /dbscripts/apimgt/identity
+#  command: mv {{ PRODUCT_HOME }}/dbscripts/apimgt {{ PRODUCT_HOME }}/dbscripts/identity
+#  when: dbscripts_apimgt_folder.stat.exists and PRODUCT_FLAG == "api-mgr"
+ 
+
+#################### INTEGRATOR ###################
+
+- name: Copy MySQL connector files
+  copy: src="{{ role_path }}/files/mysql-connector-java-5.1.41-bin.jar" dest="{{ PRODUCT_HOME }}/lib/"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator"
+
+- name: Copy OJDBC connector files
+  copy: src="{{ role_path }}/files/ojdbc6.jar" dest="{{ PRODUCT_HOME }}/lib/"
+  become_user: "{{ user }}"
+  when: PRODUCT_FLAG == "integrator"
+
+- name: Copy jars #Copy the jars mentioned in the documentation to the [WSO2_ESB]/lib folder
+  copy: src="{{ PRODUCT_HOME }}/wso2/broker/client-lib/{{ item }}" dest="{{ PRODUCT_HOME }}/lib/" remote_src=true
+  with_items:
+#     - andes-client-3.2.4.jar
+     - andes-client-3.2.13.jar
+     - geronimo-jms_1.1_spec-1.1.0.wso2v1.jar
+     - org.wso2.securevault-1.0.0-wso2v2.jar
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+
+- name: Edit conf/datasources/master-datasources.xml
+  template:
+    src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/master-datasources.xml.j2"
+    dest: "{{ PRODUCT_HOME }}/conf/datasources/master-datasources.xml"
+    mode: 0775
+  with_items:
+    - { db_name: "{{ REG_DB_NAME }}", url: "{{ REG_DB_URL }}", driver: "{{ DB_DRIVER }}", user: "{{ REG_DB_USER}}", pass: "{{ REG_DB_PASS }}" }
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+- name: Edit conf files
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/conf/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: registry.xml.j2, dest: registry.xml }
+    - { src: user-mgt.xml.j2, dest: user-mgt.xml }
+    - { src: identity.xml.j2, dest: identity/identity.xml }
+    - { src: axis2_nhttp.xml.j2, dest: axis2/axis2_nhttp.xml }
+    - { src: axis2_pt.xml.j2, dest: axis2/axis2_pt.xml }
+    - { src: axis2.xml.j2, dest: axis2/axis2.xml }
+    - { src: axis2_client.xml.j2, dest: axis2/axis2_client.xml }
+    - { src: carbon.xml.j2, dest: carbon.xml }
+    - { src: catalina-server.xml.j2, dest: tomcat/catalina-server.xml }
+    - { src: tomcat-users.xml.j2, dest: tomcat/tomcat-users.xml }
+    - { src: data-agent-config.xml.j2, dest: data-bridge/data-agent-config.xml }
+    - { src: tasks-config.xml.j2, dest: etc/tasks-config.xml }   
+    - { src: log4j.properties.j2, dest: log4j.properties }
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+
+- name: Edit integrator.sh
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/bin/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: integrator.sh.j2, dest: integrator.sh }
+  when:
+    - PRODUCT_FLAG == "integrator"
+    - PRODUCT_NAME != "msg-broker"
+
+
+- name: Update Timeout Settings ESB
+  lineinfile: path="{{ PRODUCT_HOME }}/conf/passthru-http.properties" regexp="http\.socket\.timeout=180000" line="http.socket.timeout=900000"
+  when:
+    - PRODUCT_NAME == "esb"
+
+
+
+
+
+#- name: Update Task Server Count ESB
+#  lineinfile: path="{{ PRODUCT_HOME }}/conf/etc/tasks-config.xml" regexp="<taskServerCount>1</taskServerCount>" line="    <taskServerCount>2</taskServerCount>" state="present"
+#  when:
+#    - PRODUCT_FLAG == "integrator"
+#    - PRODUCT_NAME == "esb"
+#    - CLUSTER == "true"
+
+
+- name: stat module to check if ESB mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/dbscripts/mysql5.7.sql
+  register: dbscripts_mysql_esb
+
+- name: stat module to check if ESB mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/dbscripts/identity/mysql-5.7.sql
+  register: identity_mysql_esb
+
+  # RDS configuration to avoid use != mysql5.7
+- name: Rename ESB /dbscripts/mysql.sql to /dbscripts/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/dbscripts/mysql.sql {{ PRODUCT_HOME }}/dbscripts/mysql.sql.old
+  when: 
+    - dbscripts_mysql_esb.stat.exists
+    - PRODUCT_FLAG == "integrator"
+
+- name: Rename ESB dbscripts/identity/mysql.sql to /wso2/broker/dbscripts/identity/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/dbscripts/identity/mysql.sql {{ PRODUCT_HOME }}/dbscripts/identity/mysql.sql.old
+  when: 
+    - identity_mysql_esb.stat.exists
+    - PRODUCT_FLAG == "integrator"
+
+  # RDS configuration to use mysql5.7.sql
+- name: Rename ESB /dbscripts/mysql5.7.sql to /dbscripts/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/dbscripts/mysql5.7.sql {{ PRODUCT_HOME }}/dbscripts/mysql.sql
+  when: 
+    - dbscripts_mysql_esb.stat.exists
+    - PRODUCT_FLAG == "integrator"
+
+- name: Rename ESB dbscripts/identity/mysql-5.7.sql to dbscripts/identity/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/dbscripts/identity/mysql-5.7.sql {{ PRODUCT_HOME }}/dbscripts/identity/mysql.sql
+  when: 
+    - identity_mysql_esb.stat.exists
+    - PRODUCT_FLAG == "integrator"
+
+######################### INTEGRATOR: MSG-BROKER ##################################################
+
+- name: Editing integrator.sh and setting access level
+  template:
+      src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME }}/integrator.sh.j2"
+      dest: "{{ PRODUCT_HOME }}/bin/integrator.sh"
+      mode: 0775
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+- name: Edit conf/datasources/master-datasources.xml
+  template:
+    src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME }}/master-datasources.xml.j2"
+    dest: "{{ PRODUCT_HOME }}/wso2/broker/conf/datasources/master-datasources.xml"
+    mode: 0775
+  with_items:
+    - { db_name: "{{ REG_DB_NAME }}", url: "{{ REG_DB_URL }}", driver: "{{ DB_DRIVER }}", user: "{{ REG_DB_USER}}", pass: "{{ REG_DB_PASS }}" }
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+- name: Edit conf files
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/wso2/broker/conf/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: registry.xml.j2, dest: registry.xml }
+    - { src: user-mgt.xml.j2, dest: user-mgt.xml }
+    - { src: identity.xml.j2, dest: identity/identity.xml }
+    - { src: axis2_client.xml.j2, dest: axis2/axis2_client.xml }
+    - { src: broker.xml.j2, dest: broker.xml }
+    - { src: carbon.xml.j2, dest: carbon.xml }
+    - { src: catalina-server.xml.j2, dest: tomcat/catalina-server.xml }
+    - { src: tomcat-users.xml.j2, dest: tomcat/tomcat-users.xml }
+    - { src: log4j.properties.j2, dest: log4j.properties }
+  become_user: "{{ user }}"
+  when: PRODUCT_NAME == "msg-broker"
+
+
+- name: Edit axis2.xml BROKER CLUSTERED
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/wso2/broker/conf/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: axis2.xml.j2, dest: axis2/axis2.xml }
+  become_user: "{{ user }}"
+  when: 
+    - PRODUCT_NAME == "msg-broker"
+    - CLUSTER == "true"
+
+- name: Edit BROKER wso2server.sh
+  template:
+     src: "{{ role_path }}/templates/{{ PRODUCT_FLAG }}/{{ PRODUCT_NAME }}/{{ item.src }}"
+     dest: "{{ PRODUCT_HOME }}/wso2/broker/bin/{{ item.dest }}"
+     mode: 0775
+  with_items:
+    - { src: wso2server.sh.j2, dest: wso2server.sh }
+  become_user: "{{ user }}"
+  when:
+    - PRODUCT_NAME == "msg-broker"
+
+
+- name: stat module to check if MSG-BROKER mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/wso2/broker/dbscripts/mysql5.7.sql
+  register: dbscripts_mysql_msg_broker
+
+- name: stat module to check if MSG-BROKER mysql5.7.sql actually exists
+  stat: path={{ PRODUCT_HOME }}/wso2/broker/dbscripts/identity/mysql-5.7.sql
+  register: identity_mysql_msg_broker
+
+  # RDS configuration to avoid use != mysql5.7
+- name: Rename MSG-BROKER /wso2/broker/dbscripts/mysql.sql to /wso2/broker/dbscripts/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/wso2/broker/dbscripts/mysql.sql {{ PRODUCT_HOME }}/wso2/broker/dbscripts/mysql.sql.old
+  when: 
+    - dbscripts_mysql_msg_broker.stat.exists
+    - PRODUCT_NAME == "msg-broker"
+
+- name: Rename MSG-BROKER /wso2/broker/dbscripts/identity/mysql.sql to /wso2/broker/dbscripts/identity/mysql.sql.old
+  command: mv {{ PRODUCT_HOME }}/wso2/broker/dbscripts/identity/mysql.sql {{ PRODUCT_HOME }}/wso2/broker/dbscripts/identity/mysql.sql.old
+  when: 
+    - identity_mysql_msg_broker.stat.exists
+    - PRODUCT_NAME == "msg-broker"
+
+  # RDS configuration to use mysql5.7.sql
+- name: Rename MSG-BROKER /wso2/broker/dbscripts/mysql5.7.sql to /wso2/broker/dbscripts/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/wso2/broker/dbscripts/mysql5.7.sql {{ PRODUCT_HOME }}/wso2/broker/dbscripts/mysql.sql
+  when: 
+    - dbscripts_mysql_msg_broker.stat.exists
+    - PRODUCT_NAME == "msg-broker"
+
+- name: Rename MSG-BROKER /wso2/broker/dbscripts/identity/mysql-5.7.sql to /wso2/broker/dbscripts/identity/mysql.sql
+  command: mv {{ PRODUCT_HOME }}/wso2/broker/dbscripts/identity/mysql-5.7.sql {{ PRODUCT_HOME }}/wso2/broker/dbscripts/identity/mysql.sql
+  when: 
+    - identity_mysql_msg_broker.stat.exists
+    - PRODUCT_NAME == "msg-broker"
+

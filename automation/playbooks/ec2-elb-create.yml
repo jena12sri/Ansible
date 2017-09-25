@@ -1,0 +1,46 @@
+---
+  - name: Provision an EC2-ELB
+    hosts: localhost
+    connection: local
+    gather_facts: False
+    tasks:
+    -  ec2_elb_lb:
+        name: msgbrkr-adtalem-com
+        scheme: internal
+        idle_timeout: 960
+        security_group_ids: sg-e1619c89
+        state: present 
+        ec2_url: https://ec2.eu-east-2.amazonaws.com
+        instance_ids:
+          - i-0c17aa760047ac4e5
+          - i-0b043336eb9be11c1 
+        subnets:
+          - subnet-03ec5c6a
+          - subnet-19839d53
+        listeners:
+          - protocol: http # options are http, https, ssl, tcp
+            load_balancer_port: 80 
+            instance_port: 8280
+          - protocol: http # options are http, https, ssl, tcp
+            load_balancer_port: 8280 
+            instance_port: 8280
+        #  - protocol: https
+        #    load_balancer_port: 443
+        #    instance_port: 8243 
+        #    ssl_certificate_id: "arn:aws:acm:us-east-2:175080934763:certificate/b5758dd6-1183-475f-a021-4b1ff75936aa"
+        #  - protocol: https
+        #    load_balancer_port: 8243 
+        #    instance_port: 8243
+        #    ssl_certificate_id: "arn:aws:acm:us-east-2:175080934763:certificate/b5758dd6-1183-475f-a021-4b1ff75936aa"
+        tags:
+            Key: "Name"
+            Value: "MsgBrkrProd"
+        health_check:
+            ping_protocol: http # options are http, https, ssl, tcp
+            ping_port: 8280
+            ping_path: "/services" # not required for tcp or ssl
+            response_timeout: 5 # seconds
+            interval: 6 # seconds
+            unhealthy_threshold: 2
+            healthy_threshold: 2 
+

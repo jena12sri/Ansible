@@ -1,0 +1,21 @@
+---
+
+- name: Install httpd rpm
+  yum:
+    name=httpd24
+    state=present
+    disable_gpg_check=yes
+
+- name: httpd config file
+  template:
+    src=httpd.conf
+    dest=/etc/httpd/conf/httpd.conf
+
+- name: Start the Apache service and make it to start automatically on every reboot
+  service:
+    name=httpd
+    state=started
+    enabled=yes
+
+
+
